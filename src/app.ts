@@ -13,6 +13,14 @@ app.get('/api/users', (req: Request, res: Response) => {
   res.json(users);
 });
 
+app.get('/download', (req: Request, res: Response) => {
+  res.download(path.join(__dirname, '../public/images/logo.svg'));
+})
+
+app.get('/redirect', (req: Request, res: Response) => {
+  res.redirect('https://www.google.com');
+})
+
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
