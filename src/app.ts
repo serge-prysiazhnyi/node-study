@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import { NextFunction } from 'express';
 import users from './routes/users';
+import posts from './routes/posts';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -13,6 +14,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Routes
 app.use('/api/users', users);
+app.use('/api/posts', posts);
 
 app.get('/download', (req: Request, res: Response) => {
   res.download(path.join(__dirname, '../public/images/logo.svg'));
