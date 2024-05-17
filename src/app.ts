@@ -1,18 +1,18 @@
 import express, { Request, Response } from 'express';
-import users from './mocks/users.json';
+
 import path from 'path';
 import { NextFunction } from 'express';
+import users from './routes/users';
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-app.get('/api/users', (req: Request, res: Response) => {
-  res.json(users);
-});
+// Routes
+app.use('/api/users', users);
 
 app.get('/download', (req: Request, res: Response) => {
   res.download(path.join(__dirname, '../public/images/logo.svg'));
