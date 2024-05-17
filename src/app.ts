@@ -4,6 +4,7 @@ import path from 'path';
 import { NextFunction } from 'express';
 import users from './routes/users';
 import posts from './routes/posts';
+import logger from './middleware/logger'
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -11,6 +12,7 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(logger);
 
 // Routes
 app.use('/api/users', users);
