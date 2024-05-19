@@ -1,7 +1,6 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 
 import path from "path";
-import { NextFunction } from "express";
 import users from "./routes/users";
 import posts from "./routes/posts";
 import logger from "./middleware/logger";
@@ -14,6 +13,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(logger);
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.cookie('cookieName', 'cookieValue', { maxAge: 900000, httpOnly: true });
+  next();
+});
 
 // Routes
 app.use("/api/users", users);
