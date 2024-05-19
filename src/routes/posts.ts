@@ -1,5 +1,7 @@
 import express from 'express'
 
+import { HttpError } from "../middleware/error"
+
 const router = express.Router();
 
 interface Post {
@@ -30,11 +32,13 @@ router.get('/', (_, res) => {
     res.json(posts);
 })
 
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
     const post = posts.find((post) => post.id === req.params.id);
 
     if (!post) {
-        return res.status(404).json({ msg: 'Post not found' });
+        const error = new HttpError('Post not found', 500)
+
+        next(error);
     }
 
     res.json(post);
