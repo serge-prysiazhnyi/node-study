@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
-
 import path from "path";
+import mongoose from "mongoose";
+
+import config from './config';
 import users from "./routes/users";
 import posts from "./routes/posts";
 import logger from "./middleware/logger";
@@ -9,12 +11,18 @@ import errorHandler, { HttpError } from "./middleware/error";
 const app = express();
 const port = process.env.PORT || 5000;
 
+const uri = `mongodb+srv://${config.dbUserName}:${config.dbPassword}@cluster0.zqvuhhm.mongodb.net/${config.dbName}?retryWrites=true&w=majority&appName=Cluster0`;
+mongoose
+  .connect(uri)
+  .then(() => console.log("Database connected"))
+  .catch((err) => console.log("Database connection error: ", err));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
 app.use(logger);
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.cookie('cookieName', 'cookieValue', { maxAge: 900000, httpOnly: true });
+  res.cookie("cookieName", "cookieValue", { maxAge: 900000, httpOnly: true });
   next();
 });
 

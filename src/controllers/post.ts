@@ -1,118 +1,108 @@
 import { Request, Response, NextFunction } from "express";
 
 import { HttpError } from "../middleware/error";
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-}
-
-let posts: Post[] = [
-  {
-    id: "1",
-    title: "Post 1",
-    content: "This is the first post",
-  },
-  {
-    id: "2",
-    title: "Post 2",
-    content: "This is the second post",
-  },
-  {
-    id: "3",
-    title: "Post 3",
-    content: "This is the third post",
-  },
-];
+import Post from "../models/post";
 
 // @desc Get all posts
 // @route GET /api/posts
-const getPosts = (req: Request, res: Response) => {
-  console.log("getPosts");
+const getPosts = async (req: Request, res: Response) => {
+  try {
+    const posts = await Post.find();
 
-  res.json(posts);
+    res.json(posts);
+  } catch (err: any) {
+    console.log("🚀 ~ getPosts ~ err:", err);
+    // throw new HttpError(err?.message || "Not found", 500);
+  }
 };
 
 // @desc Get single post
 // @route GET /api/posts/:id
-const getPost = (req: Request, res: Response, next: NextFunction) => {
-  const post = posts.find((post) => post.id === req.params.id);
+const getPost = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const post = await Post.findById(req.params.id);
 
-  if (!post) {
-    const error = new HttpError("Post not found", 500);
+    if (!post) {
+      const error = new HttpError("Post not found", 404);
+      next(error);
+
+      res.status(200).json(post);
+    }
+  } catch (err: unknown) {
+    const error = new HttpError((err as Error).message, 500);
     next(error);
   }
-
-  res.json(post);
 };
 
 // @desc Create post
 // @route POST /api/posts/
-const createPost = (req: Request, res: Response, next: NextFunction) => {
-  const { title, content } = req.body;
+const createPost = async (req: Request, res: Response, next: NextFunction) => {
+  const { title, content, author } = req.body;
 
-  if (!title || !content) {
+  if (!title || !content || !author) {
     const error = new HttpError("Please include a title and content", 400);
     next(error);
   }
 
-  const newPost = {
-    id: String(posts.length + 1),
-    title,
-    content,
-  };
+  try {
+    const post = new Post({ title, content, author });
+    await post.save();
 
-  posts.push(newPost);
-
-  res.status(201).json({ msg: "Post created", post: newPost });
+    res.status(201).json({ msg: "Post created", post });
+  } catch (err: unknown) {
+    const error = new HttpError((err as Error).message, 500);
+    next(error);
+  }
 };
 
 // @desc Update post
 // @route PUT /api/posts/:id
-const updatePost = (req: Request, res: Response, next: NextFunction) => {
-  const post = posts.find((post) => post.id === req.params.id);
+const updatePost = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const { title, content, author } = req.body;
 
-  if (!post) {
-    const error = new HttpError("Post not found", 404);
-    next(error);
-  }
-
-  const { title, content } = req.body;
-
-  if (!title || !content) {
+  if (!title || !content || !author) {
     const error = new HttpError("Please include a title and content", 400);
     next(error);
   }
 
-  posts = posts.map((post) => {
-    if (post.id === req.params.id) {
-      return {
-        ...post,
-        title,
-        content,
-      };
+  try {
+    const updatedPost = await Post.findByIdAndUpdate(
+      id,
+      { title, content, author },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      const error = new HttpError("Post not found", 404);
+      next(error);
     }
 
-    return post;
-  });
-
-  res.status(204).json({ msg: "Post updated" });
+    res.status(204).json({ msg: "Post updated" });
+  } catch (err: unknown) {
+    const error = new HttpError((err as Error).message, 500);
+    next(error);
+  }
 };
 
 // @desc Delete post
 // @route DELETE /api/posts/:id
-const deletePost = (req: Request, res: Response, next: NextFunction) => {
-  const post = posts.find((post) => post.id === req.params.id);
+const deletePost = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
 
-  if (!post) {
-    const error = new HttpError("Post not found", 404);
+  try {
+    const deletedPost = await Post.findByIdAndDelete(id);
+
+    if (!deletedPost) {
+      const error = new HttpError("Post not found", 404);
+      next(error);
+    }
+
+    res.status(204).json({ msg: "Post deleted" });
+  } catch (err: unknown) {
+    const error = new HttpError((err as Error).message, 500);
     next(error);
   }
-
-  posts = posts.filter((post) => post.id !== req.params.id);
-
-  res.status(204).json({ msg: "Post deleted" });
 };
 
 export { getPosts, getPost, createPost, updatePost, deletePost };
