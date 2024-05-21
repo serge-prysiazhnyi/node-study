@@ -3,13 +3,13 @@ import path from "path";
 import mongoose from "mongoose";
 
 import config from './config';
-import users from "./routes/users";
+import auth from "./routes/auth";
 import posts from "./routes/posts";
 import logger from "./middleware/logger";
 import errorHandler, { HttpError } from "./middleware/error";
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
 
 const uri = `mongodb+srv://${config.dbUserName}:${config.dbPassword}@cluster0.zqvuhhm.mongodb.net/${config.dbName}?retryWrites=true&w=majority&appName=Cluster0`;
 mongoose
@@ -27,7 +27,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Routes
-app.use("/api/users", users);
+app.use("/api/auth", auth);
 app.use("/api/posts", posts);
 
 app.get("/download", (req: Request, res: Response) => {

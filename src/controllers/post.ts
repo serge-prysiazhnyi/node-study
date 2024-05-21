@@ -5,14 +5,14 @@ import Post from "../models/post";
 
 // @desc Get all posts
 // @route GET /api/posts
-const getPosts = async (req: Request, res: Response) => {
+const getPosts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const posts = await Post.find();
 
-    res.json(posts);
-  } catch (err: any) {
-    console.log("🚀 ~ getPosts ~ err:", err);
-    // throw new HttpError(err?.message || "Not found", 500);
+    res.status(200).json(posts);
+  } catch (err: unknown) {
+    const error = new HttpError((err as Error).message, 500);
+    next(error);
   }
 };
 
